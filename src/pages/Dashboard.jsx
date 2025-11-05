@@ -98,33 +98,7 @@ return (
             </div>
         </section>
 
-        {/* Fila baja: KPIs y sparklines */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {kpis.map((k) => (
-            <div
-                key={k.title}
-                className="card card-pad bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm"
-            >
-                <div className="flex items-start justify-between">
-                <div>
-                    <div className="card-title text-gray-900 dark:text-white">{k.title}</div>
-                    <div className="card-value text-gray-900 dark:text-white">{k.value}</div>
-                    <div
-                    className={`mt-1 text-xs font-medium ${
-                        k.delta >= 0 ? 'text-emerald-600' : 'text-rose-600'
-                    }`}
-                    >
-                    {k.delta >= 0 ? '▲' : '▼'} {Math.abs(k.delta)}%
-                    </div>
-                </div>
-                <div className="text-2xl">{k.icon}</div>
-                </div>
-                <div className="mt-3">
-                <AreaSparkline points={trendData} />
-                </div>
-            </div>
-            ))}
-        </section>
+        
         </main>
     </div>
     </div>
