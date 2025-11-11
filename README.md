@@ -1,12 +1,48 @@
-# React + Vite
+## 🚀 Cómo ejecutar este proyecto en tu ordenador
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### 🧱 1️⃣ Requisitos previos
 
-Currently, two official plugins are available:
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) (Windows/Mac)  
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 📥 2️⃣ Clonar el repositorio
 
-## Expanding the ESLint configuration
+Abre una terminal y ejecuta:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+git clone https://github.com/BitSealer/bitsealer-frontend
+cd bitsealer-frontend
+```
+
+### ⚙️ 3️⃣ Crear el archivo `.env`
+
+Copia el ejemplo incluido:
+
+```bash
+cp .env.example .env
+```
+
+### 🧩 4️⃣ Construir las imágenes Docker
+
+```bash
+docker compose build --no-cache
+docker compose up -d
+```
+
+### Servidor:
+
+```bash
+http://localhost:5173
+```
+
+
+### Otros comandos
+
+Verificar estado:
+```bash
+docker compose ps
+```
+
+Ver logs de aplicacion:
+```bash
+docker compose logs -f frontend
+```
