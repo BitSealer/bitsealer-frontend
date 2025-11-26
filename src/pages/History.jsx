@@ -24,7 +24,7 @@ export default function History() {
   return (
     <div className="card">
       <div className="card-header">
-        <h2>Historial de Archivos</h2>
+        <h2 className="p-4">Historial de Archivos</h2>
       </div>
       <div className="card-body">
         {error && <div className="error">{error}</div>}
