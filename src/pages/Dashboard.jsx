@@ -1,23 +1,24 @@
-import Sidebar from '../components/Sidebar.jsx';
-import Topbar from '../components/Topbar.jsx';
+// src/pages/Dashboard.jsx
+import { useMemo, useState, useEffect, useCallback } from 'react';
+import { getHistory, getBitcoinFee } from '../api/files';
+import { format } from 'date-fns';
+
 import StatCard from '../components/cards/StatCard.jsx';
-import ProgressCard from '../components/cards/ProgressCard.jsx';
-import AreaSparkline from '../components/charts/AreaSparkline.jsx';
-import BarMini from '../components/charts/BarMini.jsx';
 import LineChart from '../components/charts/LineChart.jsx';
 import RecentTable from '../components/RecentTable.jsx';
 import ActivityTimeline from '../components/ActivityTimeline.jsx';
-
-import { kpis, progress, bars, actividad } from '../mocks/data.js';
-import { useMemo, useState, useEffect } from 'react';
-import { getHistory } from '../api/files';
 
 export default function Dashboard() {
     const [period, setPeriod] = useState('30d');
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshKey, setRefreshKey] = useState(0); 
+    const [btcFee, setBtcFee] = useState('...'); 
 
-    useEffect(() => {
+    // Función de obtención de datos centralizada
+    const fetchHistory = useCallback(() => {
+        setLoading(true);
+        // 1. Obtener el historial
         getHistory()
             .then(data => {
                 setHistory(data);
@@ -27,140 +28,192 @@ export default function Dashboard() {
                 console.error("Error fetching history:", err);
                 setLoading(false);
             });
+            
+        // 2. Obtener la tarifa de BTC
+        getBitcoinFee()
+            .then(fee => {
+                setBtcFee(fee);
+            })
+            .catch(err => console.error("Could not fetch fee:", err));
+
     }, []);
 
-    // 1. Calcular KPIs Reales
-    const totalFiles = history.length;
-    // Precio Bitcoin Mock
-    const btcPrice = "64,230 $";
+    // Ejecuta la obtención de datos al montar y al hacer refresh
+    useEffect(() => {
+        fetchHistory();
+        
+        // Recarga automática de la tarifa cada 60 segundos
+        const intervalId = setInterval(fetchHistory, 60000); 
+        return () => clearInterval(intervalId); // Limpiar al desmontar
+    }, [refreshKey, fetchHistory]); 
 
-    // 2. Procesar datos para la gráfica (Trend)
-    const { trendData, trendLabels } = useMemo(() => {
-        if (!history.length) return { trendData: Array(10).fill(0), trendLabels: [] };
+    // Función para que otros componentes puedan forzar la actualización
+    const handleRefresh = () => {
+        setRefreshKey(prev => prev + 1);
+    };
 
-        const daysMap = {};
+    // Lógica para determinar el delta y el color
+    const getFeeDelta = (fee) => {
+        if (typeof fee !== 'number') return 0; // Si aún es '...' o error, neutro
+
+        // Umbrales de coste (ajustables según necesidad)
+        if (fee < 15) {
+            return 1; // Verde (Positivo - Barato)
+        } else if (fee <= 30) {
+            return 0; // Naranja (Neutro - Medio)
+        } else {
+            return -1; // Rojo (Negativo - Caro)
+        }
+    };
+
+    const feeDelta = getFeeDelta(btcFee);
+
+    // 1. Calcular KPIs Reales y Datos de Tendencia
+    const { totalFiles, trendData, trendLabels } = useMemo(() => {
         const now = new Date();
+        
         let daysCount = 30;
         if (period === '7d') daysCount = 7;
         if (period === '90d') daysCount = 90;
 
-        // Inicializar mapa con 0s
-        for (let i = 0; i < daysCount; i++) {
+        const daysMap = {};
+
+        // Bucle para inicializar el mapa con las fechas del rango (incluyendo HOY)
+        for (let i = daysCount - 1; i >= 0; i--) {
             const d = new Date();
             d.setDate(now.getDate() - i);
-            const key = d.toISOString().split('T')[0];
+            const key = format(d, 'yyyy-MM-dd'); 
             daysMap[key] = 0;
         }
 
-        // Contar archivos por día
+        // Contar archivos por día (con corrección de zona horaria)
         history.forEach(file => {
-            const dateStr = file.createdAt ? file.createdAt.split('T')[0] : '';
+            const dbDate = new Date(file.createdAt); 
+            const dateStr = format(dbDate, 'yyyy-MM-dd');
+            
             if (daysMap[dateStr] !== undefined) {
                 daysMap[dateStr]++;
             }
         });
-
+        
         const sortedKeys = Object.keys(daysMap).sort();
+        
         return {
+            totalFiles: history.length,
             trendData: sortedKeys.map(k => daysMap[k]),
             trendLabels: sortedKeys
         };
     }, [history, period]);
 
+    // KPI 3: Media diaria de sellados en el período
+    const averageFiles = trendData.length > 0 && history.length > 0
+        ? (history.length / trendData.length).toFixed(1)
+        : 0;
+    
     // 3. Procesar datos para la tabla (RecentTable)
     const recentFiles = useMemo(() => {
         return [...history]
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 10)
             .map(file => ({
                 nombre: file.originalFilename,
-                fecha: file.createdAt ? file.createdAt.split('T')[0] : 'N/A',
+                fecha: file.createdAt ? format(new Date(file.createdAt), 'yyyy-MM-dd HH:mm') : 'N/A', 
                 hash: file.sha256
             }));
     }, [history]);
 
+    // 4. Los tres KPIs
+    const mainKpis = [
+        { title: "Total Archivos Sellados", value: totalFiles.toLocaleString(), icon: "🗂️" },
+        // KPI de COMISIÓN ACTUALIZADO con el delta de color
+        { 
+            title: "Tarifa Rápida BTC (sat/vB)", 
+            value: typeof btcFee === 'number' ? btcFee.toLocaleString() : btcFee, 
+            delta: feeDelta, // Usamos el delta calculado (1, 0, -1)
+            icon: "⚡" 
+        },
+        { title: "Media Diaria Sellados", value: averageFiles, icon: "📈" },
+    ];
+
     return (
-        <div className="min-h-screen flex bg-gray-50 dark:bg-neutral-950">
-            {/* Sidebar “pro” */}
-
-
-            {/* Main */}
-            <div className="flex-1 flex flex-col">
-                {/* Topbar si lo necesitas */}
-                <div className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 bg-white dark:bg-neutral-900/70 border-b border-gray-200 dark:border-neutral-800">
-                    <div className="px-4 md:px-6 py-3">
-
-                    </div>
-                </div>
-
-                <main className="p-4 md:p-6 space-y-6">
-                    {/* Nuevos KPIs Superiores */}
-                    <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <StatCard
-                            title="Total Archivos Sellados"
-                            value={totalFiles}
-                            icon="🗂️"
-                        />
-                        <StatCard
-                            title="Precio Red Bitcoin"
-                            value={btcPrice}
-                            delta={2.4}
-                            icon="₿"
-                        />
-                    </section>
-
-                    {/* Fila superior: Chart + Progress + mini bars */}
-                    <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        <div className="lg:col-span-2 card card-pad bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="text-base font-semibold text-gray-900 dark:text-white">Archivos sellados ({period})</div>
-                                <div className="flex items-center gap-2">
-                                    {['7d', '30d', '90d'].map(p => (
-                                        <button
-                                            key={p}
-                                            onClick={() => setPeriod(p)}
-                                            className={`px-3 py-1.5 rounded-lg text-sm transition ${period === p
-                                                    ? 'bg-gray-900 text-white dark:bg-white dark:text-black'
-                                                    : 'bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-neutral-200'
-                                                }`}
-                                        >
-                                            {p}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="mt-2">
-                                <LineChart data={trendData} labels={trendLabels} />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            {progress.map((p) => (
-                                <div
-                                    key={p.title}
-                                    className="card card-pad bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm"
+        <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-4 md:p-6"> 
+            <main className="space-y-6">
+                
+                <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Gráfica (2/3 de la columna) */}
+                    <div className="lg:col-span-2 card card-pad bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-lg">
+                        <div className="flex items-center justify-between mb-4">
+                            {/* Botón de refresco explícito */}
+                            <div className="flex items-center gap-3">
+                                <div className="text-xl font-bold text-gray-900 dark:text-white">Tendencia de Sellados ({period})</div>
+                                <button 
+                                    onClick={handleRefresh}
+                                    className={`text-sm font-medium transition cursor-pointer 
+                                        ${loading 
+                                            ? 'text-gray-500 dark:text-neutral-600 cursor-not-allowed' 
+                                            : 'text-orange-500 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300'
+                                        }`}
+                                    title="Refrescar datos del dashboard"
+                                    disabled={loading}
                                 >
-                                    <ProgressCard {...p} />
-                                </div>
-                            ))}
-                            <div className="card card-pad bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm">
-                                <div className="card-title text-gray-900 dark:text-white">Ocupación semanal</div>
-                                <div className="mt-2">
-                                    <BarMini values={bars} />
-                                </div>
+                                    {/* 🚨 TEXTO SIMPLE SIN CAJA */}
+                                    {loading ? 'Cargando...' : 'Refrescar'}
+                                </button>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                {['7d', '30d', '90d'].map(p => (
+                                    <button
+                                        key={p}
+                                        onClick={() => setPeriod(p)}
+                                        className={`px-3 py-1.5 rounded-lg text-sm transition ${period === p
+                                                ? 'bg-orange-500 text-white shadow-md'
+                                                : 'bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-neutral-200 hover:bg-gray-200 dark:hover:bg-neutral-700'
+                                            }`}
+                                    >
+                                        {p}
+                                    </button>
+                                ))}
                             </div>
                         </div>
-                    </section>
+                        {loading || trendData.length === 0 ? (
+                            <div className="h-96 flex items-center justify-center text-gray-500 dark:text-neutral-400">
+                                {loading ? "Cargando datos..." : "No hay datos para el periodo seleccionado."}
+                            </div>
+                        ) : (
+                            <div className="mt-4">
+                                <LineChart 
+                                    data={trendData} 
+                                    labels={trendLabels} 
+                                />
+                            </div>
+                        )}
+                    </div>
 
-                    {/* Fila media: tabla + timeline */}
-                    <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-                        <div className="xl:col-span-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm">
-                            <RecentTable rows={recentFiles} />
+                    {/* KPIs Laterales (1/3 de la columna) */}
+                    <div className="space-y-4">
+                        {mainKpis.map((kpi, index) => (
+                            <div
+                                key={index}
+                                className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-lg"
+                            >
+                                <StatCard {...kpi} />
+                            </div>
+                        ))}
+                        <div className="text-xs text-gray-500 dark:text-gray-400 p-2">
+                            <p>Tarifa BTC actualizada cada 60 segundos.</p>
+                            <p>Las tarifas bajas (&lt; 20 sat/vB) indican un momento óptimo para el sellado.</p>
                         </div>
-                    </section>
+                    </div>
+                </section>
 
-
-                </main>
-            </div>
+                {/* Fila media: tabla */}
+                <section className="grid grid-cols-1 gap-6">
+                    <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm">
+                        <RecentTable rows={recentFiles} />
+                    </div>
+                </section>
+            </main>
         </div>
     );
 }
