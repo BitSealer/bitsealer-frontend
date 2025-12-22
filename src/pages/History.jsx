@@ -7,18 +7,20 @@ export default function History() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    getHistory().then(data => {
-      // Mapear datos a formato esperado por RecentTable
-      const rows = data.map(file => ({
-        nombre: file.originalFilename,
-        fecha: file.createdAt ? file.createdAt.split('T')[0] : '',
-        hash: file.sha256
-      }));
-      setFiles(rows);
-    }).catch(err => {
-      console.error(err);
-      setError('Error al cargar el historial');
-    });
+    getHistory()
+      .then(data => {
+        const rows = data.map(file => ({
+          nombre: file.originalFilename,
+          fecha: file.createdAt ? file.createdAt.split('T')[0] : '',
+          hash: file.sha256,
+          estado: file.stampStatus || 'PENDING', // fallback
+        }));
+        setFiles(rows);
+      })
+      .catch(err => {
+        console.error(err);
+        setError('Error al cargar el historial');
+      });
   }, []);
 
   return (
