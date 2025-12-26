@@ -10,10 +10,12 @@ export default function History() {
     getHistory()
       .then(data => {
         const rows = data.map(file => ({
+          id: file.id,
+          stampId: file.stampId,
           nombre: file.originalFilename,
           fecha: file.createdAt ? file.createdAt.split('T')[0] : '',
           hash: file.sha256,
-          estado: file.stampStatus || 'PENDING', // fallback
+          estado: file.stampStatus || 'PENDING',
         }));
         setFiles(rows);
       })

@@ -15,6 +15,17 @@ export const getHistory = () => {
     return apiClient.get('/files/history').then(res => res.data);
 };
 
+// Descargas (blob)
+export const downloadOts = (fileHashId) => {
+    return apiClient.get(`/files/${fileHashId}/ots`, { responseType: 'blob' })
+        .then(res => res);
+};
+
+export const downloadCertificate = (fileHashId) => {
+    return apiClient.get(`/files/${fileHashId}/certificate`, { responseType: 'blob' })
+        .then(res => res);
+};
+
 export const getDashboard = () => {
     return apiClient.get('/dashboard').then(res => res.data);
 };
@@ -32,11 +43,10 @@ export const getBitcoinFee = () => {
             return res.json();
         })
         .then(data => {
-            // Devolvemos la tarifa "más rápida" o "high"
-            return data.fastestFee || data.halfHourFee || 10; // 10 sat/vB como fallback
+            return data.fastestFee || data.halfHourFee || 10;
         })
         .catch(err => {
             console.error("Error fetching Bitcoin fee:", err);
-            return 10; // Fallback seguro
+            return 10;
         });
 };

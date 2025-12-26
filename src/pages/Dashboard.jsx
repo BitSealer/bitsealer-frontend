@@ -116,12 +116,14 @@ export default function Dashboard() {
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 10)
             .map(file => ({
-            nombre: file.originalFilename || "Sin nombre",
-            fecha: file.createdAt ? format(new Date(file.createdAt), "yyyy-MM-dd HH:mm") : "N/A",
-            hash: file.sha256,
-            estado: file.stampStatus || "PENDING",
-            txid: file.txid || ""
-            }));
+                id: file.id,
+                stampId: file.stampId,
+                nombre: file.originalFilename || "Sin nombre",
+                fecha: file.createdAt ? format(new Date(file.createdAt), "yyyy-MM-dd HH:mm") : "N/A",
+                hash: file.sha256,
+                estado: file.stampStatus || "PENDING",
+                sealedAt: file.sealedAt || null
+                }));
         }, [history]);
 
 
