@@ -15,6 +15,11 @@ export const getHistory = () => {
     return apiClient.get('/files/history').then(res => res.data);
 };
 
+// Detalle (para /history/:id)
+export const getFileDetails = (fileHashId) => {
+    return apiClient.get(`/files/${fileHashId}`).then(res => res.data);
+};
+
 // Descargas (blob)
 export const downloadOts = (fileHashId) => {
     return apiClient.get(`/files/${fileHashId}/ots`, { responseType: 'blob' })

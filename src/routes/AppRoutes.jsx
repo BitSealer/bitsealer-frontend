@@ -10,6 +10,7 @@ import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Upload from '../pages/Upload';
 import History from '../pages/History';
+import FileDetails from '../pages/FileDetails';
 
 // Layout y protección
 import ProtectedRoute from '../routing/ProtectedRoute';
@@ -57,6 +58,17 @@ export default function AppRoutes() {
           <ProtectedRoute>
             <DashboardLayout>
               <History />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/history/:fileHashId"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <FileDetails />
             </DashboardLayout>
           </ProtectedRoute>
         }

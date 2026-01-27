@@ -129,15 +129,14 @@ export default function Dashboard() {
 
     // 4. Los tres KPIs
     const mainKpis = [
-        { title: "Total Archivos Sellados", value: totalFiles.toLocaleString(), icon: "🗂️" },
+        { title: "Total Archivos Sellados", value: totalFiles.toLocaleString(), icon: "" },
         // KPI de COMISIÓN ACTUALIZADO con el delta de color
         { 
-            title: "Tarifa Rápida BTC (sat/vB)", 
-            value: typeof btcFee === 'number' ? btcFee.toLocaleString() : btcFee, 
-            delta: feeDelta, // Usamos el delta calculado (1, 0, -1)
-            icon: "⚡" 
+            title: "Archivos pendientes", 
+            value: 0, 
+            icon: "" 
         },
-        { title: "Media Diaria Sellados", value: averageFiles, icon: "📈" },
+        { title: "Tiempo medio de Sellado", value: averageFiles+" h", icon: "" },
     ];
 
     return (
