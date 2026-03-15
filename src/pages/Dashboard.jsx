@@ -69,39 +69,47 @@ export default function Dashboard() {
     const feeDelta = getFeeDelta(btcFee);
 
     // 1. Calcular KPIs Reales y Datos de Tendencia
-    const { totalFiles, trendData, trendLabels } = useMemo(() => {
+    const { totalFiles, pendingFiles, trendData, trendLabels, latestFiles  } = useMemo(() => {
         const now = new Date();
-        
+
         let daysCount = 30;
         if (period === '7d') daysCount = 7;
         if (period === '90d') daysCount = 90;
 
         const daysMap = {};
 
-        // Bucle para inicializar el mapa con las fechas del rango (incluyendo HOY)
         for (let i = daysCount - 1; i >= 0; i--) {
             const d = new Date();
             d.setDate(now.getDate() - i);
-            const key = format(d, 'yyyy-MM-dd'); 
+            const key = format(d, 'yyyy-MM-dd');
             daysMap[key] = 0;
         }
 
-        // Contar archivos por día (con corrección de zona horaria)
         history.forEach(file => {
-            const dbDate = new Date(file.createdAt); 
+            const dbDate = new Date(file.createdAt);
             const dateStr = format(dbDate, 'yyyy-MM-dd');
-            
+
             if (daysMap[dateStr] !== undefined) {
                 daysMap[dateStr]++;
             }
         });
-        
+
+        const pendingFiles = history.filter(file =>
+            file.stampStatus === 'PENDING' || file.stampStatus === 'ANCHORING'
+        ).length;
+
+        const latestFiles = [...history]
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 5);
+
         const sortedKeys = Object.keys(daysMap).sort();
-        
+
         return {
             totalFiles: history.length,
+            pendingFiles,
             trendData: sortedKeys.map(k => daysMap[k]),
-            trendLabels: sortedKeys
+            trendLabels: sortedKeys,
+            latestFiles
         };
     }, [history, period]);
 
@@ -114,7 +122,7 @@ export default function Dashboard() {
     const recentFiles = useMemo(() => {
         return [...history]
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .slice(0, 10)
+            .slice(0, 5)
             .map(file => ({
                 id: file.id,
                 stampId: file.stampId,
@@ -129,14 +137,13 @@ export default function Dashboard() {
 
     // 4. Los tres KPIs
     const mainKpis = [
-        { title: "Total Archivos Sellados", value: totalFiles.toLocaleString(), icon: "" },
+        { title: "Total Archivos", value: totalFiles.toLocaleString(), icon: "" },
         // KPI de COMISIÓN ACTUALIZADO con el delta de color
         { 
-            title: "Archivos pendientes", 
-            value: 0, 
-            icon: "" 
+            title: "Archivos pendientes",
+            value: pendingFiles.toLocaleString(),
+            icon: ""
         },
-        { title: "Tiempo medio de Sellado", value: averageFiles+" h", icon: "" },
     ];
 
     return (
@@ -181,7 +188,7 @@ export default function Dashboard() {
                             </div>
                         </div>
                         {loading || trendData.length === 0 ? (
-                            <div className="h-96 flex items-center justify-center text-gray-500 dark:text-neutral-400">
+                            <div className="h-72 flex items-center justify-center text-gray-500 dark:text-neutral-400">
                                 {loading ? "Cargando datos..." : "No hay datos para el periodo seleccionado."}
                             </div>
                         ) : (
@@ -204,10 +211,6 @@ export default function Dashboard() {
                                 <StatCard {...kpi} />
                             </div>
                         ))}
-                        <div className="text-xs text-gray-500 dark:text-gray-400 p-2">
-                            <p>Tarifa BTC actualizada cada 60 segundos.</p>
-                            <p>Las tarifas bajas (&lt; 20 sat/vB) indican un momento óptimo para el sellado.</p>
-                        </div>
                     </div>
                 </section>
 
