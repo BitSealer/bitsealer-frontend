@@ -247,40 +247,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PUBLIC VERIFY CTA */}
-      <section id="verificar" className="max-w-6xl mx-auto px-4 py-14" ref={verifyRef}>
-        <div className="card border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur p-6 md:p-8">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-            <div className="flex-1">
-              <div className="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full bg-black/5 dark:bg-white/10">
-                <CalendarClock className="size-4" />
-                Verificación pública (sin cuenta)
-              </div>
-              <h3 className="mt-3 text-2xl md:text-3xl font-extrabold tracking-tight">
-                Comprueba un archivo con su prueba <span className="text-[#f7931a]">OpenTimestamps</span>
-              </h3>
-              <p className="mt-3 text-slate-600 dark:text-slate-300">
-                Comprueba que un archivo corresponde exactamente con su prueba OpenTimestamps (.ots). La verificación consiste
-                en recalcular el hash del archivo y validar la cadena de compromisos hasta su anclaje.
-              </p>
-            </div>
-
-            <div className="shrink-0">
-              <a
-                href="/verify"
-                className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 font-semibold text-white bg-[#f7931a] hover:bg-[#e67e00] shadow-lg shadow-orange-200/40 transition"
-              >
-                Ir a verificación pública <ArrowRight className="size-4" />
-              </a>
-              <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                Nota: si aún no existe la ruta{' '}
-                <code className="px-1 py-0.5 rounded bg-black/5 dark:bg-white/10">/verify</code>, podrás añadirla después sin
-                tocar esta landing.
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* FAQ TÉCNICA */}
       <section id="faq" className="max-w-6xl mx-auto px-4 py-14" ref={faqRef}>
@@ -340,7 +307,7 @@ export default function Home() {
             external
           />
 
-          <FinalCTA />
+          
         </div>
       </section>
 

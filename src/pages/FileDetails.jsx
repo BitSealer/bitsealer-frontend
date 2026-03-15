@@ -159,18 +159,7 @@ export default function FileDetails() {
                 Aquí tienes toda la información disponible del hash, el estado de sellado y sus evidencias descargables.
             </p>
             </div>
-
-            {/* Botón compartir */}
-            <div className="hidden sm:flex items-center gap-2">
-            <button
-                onClick={() => copyText(window.location.href)}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-800"
-                title="Copiar enlace"
-            >
-                <Copy className="w-4 h-4" />
-                Copiar enlace
-            </button>
-            </div>
+            
         </div>
 
         {loading && (
@@ -373,58 +362,7 @@ export default function FileDetails() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm">
-                    <div className="p-5 md:p-6">
-                    <div className="text-sm font-semibold text-gray-900 dark:text-white">Verificación (próximamente)</div>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
-                        Esta sección quedará lista para una página pública: cualquiera podrá verificar un archivo y su proof.
-                    </p>
-
-                    <div className="mt-4 space-y-3">
-                        <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-neutral-300 mb-1">
-                            Archivo original
-                        </label>
-                        <input
-                            type="file"
-                            onChange={(e) => setVerifyFile(e.target.files?.[0] || null)}
-                            className="block w-full text-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 dark:file:bg-neutral-800 dark:file:text-white dark:hover:file:bg-neutral-700"
-                        />
-                        <div className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
-                            {verifyFile ? `Seleccionado: ${verifyFile.name}` : "Selecciona el archivo que se selló."}
-                        </div>
-                        </div>
-
-                        <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-neutral-300 mb-1">
-                            Proof (.ots)
-                        </label>
-                        <input
-                            type="file"
-                            accept=".ots"
-                            onChange={(e) => setVerifyOts(e.target.files?.[0] || null)}
-                            className="block w-full text-sm file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 dark:file:bg-neutral-800 dark:file:text-white dark:hover:file:bg-neutral-700"
-                        />
-                        <div className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
-                            {verifyOts ? `Seleccionado: ${verifyOts.name}` : "Sube el .ots asociado (o descárgalo arriba)."}
-                        </div>
-                        </div>
-
-                        <button
-                        disabled
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-600 dark:bg-neutral-800 dark:text-neutral-300 text-sm font-semibold cursor-not-allowed"
-                        title="Funcionalidad preparada: la activaremos en la página pública de verificación"
-                        >
-                        <ShieldCheck className="w-4 h-4" />
-                        Verificar (próximamente)
-                        </button>
-                    </div>
-
-                    <div className="mt-4 text-xs text-gray-500 dark:text-neutral-400">
-                        Cuando lo activemos, el sistema comprobará que el proof corresponde al archivo y que está anclado en Bitcoin.
-                    </div>
-                    </div>
-                </div>
+                
                 </div>
             </section>
 
