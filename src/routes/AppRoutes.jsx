@@ -11,6 +11,7 @@ import Dashboard from '../pages/Dashboard';
 import Upload from '../pages/Upload';
 import History from '../pages/History';
 import FileDetails from '../pages/FileDetails';
+import Settings from '../pages/Settings';
 
 // Layout y protección
 import ProtectedRoute from '../routing/ProtectedRoute';
@@ -21,17 +22,14 @@ export default function AppRoutes() {
 
   return (
     <Routes>
-      {/* Pública: raíz redirige si ya hay sesión */}
       <Route
         path="/"
         element={user ? <Navigate to="/dashboard" replace /> : <Home />}
       />
 
-      {/* Públicas */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Privadas con layout */}
       <Route
         path="/dashboard"
         element={
@@ -42,6 +40,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/upload"
         element={
@@ -52,6 +51,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/history"
         element={
@@ -74,7 +74,17 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Wildcard */}
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Settings />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

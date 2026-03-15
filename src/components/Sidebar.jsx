@@ -5,8 +5,7 @@ const items = [
   { label: 'Inicio', href: '/dashboard', emoji: '🏠' },
   { label: 'Sellar Archivo', href: '/upload', emoji: '🧾' },
   { label: 'Historial', href: '/history', emoji: '📜' },
-  // { label: 'Cambiar Plan', href: '#', emoji: '💳' },
-  { label: 'Ajustes', href: '/', emoji: '⚙️' },
+  { label: 'Ajustes', href: '/settings', emoji: '⚙️' },
 ];
 
 export default function Sidebar() {
@@ -20,12 +19,10 @@ export default function Sidebar() {
         sticky top-0
       "
     >
-      {/* Header / brand (sin subtítulo) */}
       <div className="px-5 py-4 border-b border-gray-200 dark:border-neutral-800">
         <BrandLogo className="text-2xl" />
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {items.map((it) => (
           <NavLink
@@ -43,13 +40,11 @@ export default function Sidebar() {
               ].join(' ')
             }
           >
-            
             <span>{it.label}</span>
           </NavLink>
         ))}
       </nav>
 
-      {/* Footer */}
       <div className="px-5 py-4 border-t border-gray-200 dark:border-neutral-800 text-xs text-gray-500 dark:text-neutral-400">
         © {new Date().getFullYear()} BitSealer
       </div>
